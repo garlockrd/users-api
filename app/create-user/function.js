@@ -3,12 +3,6 @@ const http = require('/opt/nodejs/http.service.js');
 module.exports.handler = async (event) => {   
     let request = JSON.parse(event.body);
 
-    //require content-type header
-
-    // if (!http.checkForValidHeaders(event.headers)) {
-    //     return http.createResponseObject(400, { 'message': "Bad Content-Type Header" });
-    // }
-
     try {
         //Check if account id exists and has invite
 

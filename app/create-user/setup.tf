@@ -4,13 +4,14 @@ locals {
     local_path = path.module
     lambda_name = "create-user"
     url = "create"
+    request_model_name = "CreateUserRequestModel"
 }
 
 variable api_id { type = string }
 variable api_root_resource_id { type = string }
 variable api_execution_arn { type = string }
+variable validator_id { type = string }
 
-//Create the S3 bucket to update the zipped lambda file
 module "s3_upload" {
   source = "../../setup/modules/s3-lambda-upload"
   lambda_name = local.lambda_name
@@ -81,14 +82,13 @@ resource "aws_lambda_permission" "default" {
 }
 
 # //Create the requst model
-# module "api_request_model" {
-#   source = "../../api-request"
-#   api_id = var.generic_info.api_id
-#   local_path = var.local_path
-#   name = var.request_model_name
-# }
+module "api_request_model" {
+  source = "../../setup/modules/api-request-model"
+  api_id = var.api_id
+  local_path = local.local_path
+  name = local.request_model_name
+}
 
-# //Create the gateway for the endpoint
 module "api_gateway" {
   source = "../../setup/modules/api-gateway"
   api_id = var.api_id
@@ -96,6 +96,12 @@ module "api_gateway" {
   http_method = local.http_method
   lambda_invoke_arn = module.lambda.invoke_arn
   url_path = local.url
-  #request_model_name = var.request_model_name
-  #validator_id = var.generic_info.validator_id
+  request_model_name = local.request_model_name
+
+  validator_id = var.validator_id
 }
+
+
+## TO DO
+# 4. Start to work through function steps
+# 5. API Testing (How to get that in a repo?)

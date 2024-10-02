@@ -10,11 +10,19 @@ resource "aws_api_gateway_rest_api" "users" {
     tags = { terraform_created = "yes" }
 }
 
+resource "aws_api_gateway_request_validator" "require_all" {
+  name                        = "Require_headers_and_parameters"
+  rest_api_id                 = aws_api_gateway_rest_api.users.id
+  validate_request_body       = true
+  validate_request_parameters = true
+}
+
 module "create-user" {
     source = "../app/create-user"
     api_id = aws_api_gateway_rest_api.users.id
     api_root_resource_id = aws_api_gateway_rest_api.users.root_resource_id
     api_execution_arn = aws_api_gateway_rest_api.users.execution_arn
+    validator_id = aws_api_gateway_request_validator.require_all.id
 }
 
 resource "aws_api_gateway_deployment" "test" {
@@ -25,3 +33,4 @@ resource "aws_api_gateway_deployment" "test" {
   rest_api_id = aws_api_gateway_rest_api.users.id
   stage_name  = "test"
 }
+

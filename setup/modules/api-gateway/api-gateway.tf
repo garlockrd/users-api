@@ -36,6 +36,9 @@ resource "aws_api_gateway_method" "default" {
     request_models = {
       "application/json" = var.request_model_name
     }
+    request_parameters = {
+        "method.request.header.Content-Type" = true
+    }
 }
 
 resource "aws_api_gateway_integration" "default" {
