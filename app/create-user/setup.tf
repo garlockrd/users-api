@@ -48,8 +48,13 @@ module role_policy {
         {
            "Effect": "Allow"
            "Action" : ["sqs:SendMessage"],
-           "Resource" : [ module.global_settings.queues.user_history, module.global_settings.queues.account_history, 
-                          module.global_settings.queues.send_email ]
+           "Resource" : [ module.global_settings.queues.user_history.arn, module.global_settings.queues.account_history.arn, 
+                          module.global_settings.queues.send_email.arn ]
+        },
+        {
+           "Effect": "Allow"
+           "Action" : ["s3:PutObject"],
+           "Resource" : [ module.global_settings.account_s3_bucket.arn, "${module.global_settings.account_s3_bucket.arn}/*"  ]
         }
       ]
 }
@@ -62,14 +67,19 @@ module lambda {
   source_code_hash =  module.s3_upload.archive_file_hash
   role_arn = module.role.arn
   role_id = module.role.id
-  layer_arn_array = [ module.global_settings.layer_arns.http_layer ]
+  timeout = 10
+  layer_arn_array = [ module.global_settings.common_code_layer_arn ]
   environment_variables_object = {
-    accountTableName = module.global_settings.dynamo_table_info.account_history.name,
-    invited_user_dynamo_table = module.global_settings.dynamo_table_info.invited_user.name,
+    account_dynamo_name = module.global_settings.dynamo_table_info.account.name,
+    invited_user_dynamo_name = module.global_settings.dynamo_table_info.invited_user.name,
     permission_dynamo_name = module.global_settings.dynamo_table_info.permission.name,
     role_dynamo_name = module.global_settings.dynamo_table_info.role.name,
-    user_dynamo_table = module.global_settings.dynamo_table_info.user.name,
-    password_history_dynamo_table = module.global_settings.dynamo_table_info.password_history.name,
+    user_dynamo_name = module.global_settings.dynamo_table_info.user.name,
+    password_history_dynamo_name = module.global_settings.dynamo_table_info.password_history.name,
+    email_queue_url = module.global_settings.queues.send_email.url,
+    account_history_queue_url = module.global_settings.queues.account_history.url,
+    user_history_queue_url = module.global_settings.queues.user_history.url
+    accounts_s3_name = module.global_settings.account_s3_bucket.name
   }
 }
 
